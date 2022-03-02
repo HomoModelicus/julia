@@ -7,4 +7,4 @@
 
 ## Results
 - 2d mesh generation
-<img src="https://user-images.githubusercontent.com/99833572/156424722-6439a775-23b4-437b-83cc-7141c9cd223e.png" width="300" height="300">
+<img src="https://user-images.githubusercontent.com/99833572/156424722-6439a775-23b4-437b-83cc-7141c9cd223e.png" width="350" height="300">
