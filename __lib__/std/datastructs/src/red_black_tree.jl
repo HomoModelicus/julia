@@ -2,6 +2,10 @@
 # @ToDo:
 # implement delete operation
 
+# abstract type AbstractBinaryTree end # to be removed
+# abstract type AbstractBinaryTreeNode end # to be removed
+
+
 mutable struct RedBlackTreeNode{T} <: AbstractBinaryTreeNode
     color::Bool # 0 black, 1 red
     parent::RedBlackTreeNode

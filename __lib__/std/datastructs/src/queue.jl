@@ -21,6 +21,7 @@ mutable struct Queue{T} <:AbstractQueue{T}
         new(head_ptr, tail_ptr, capacity, data)
     end
 end
+
 function Queue{T}() where {T}
     min_size = minimum_queue_required_size()
     return Queue{T}(min_size)
@@ -30,112 +31,6 @@ function minimum_queue_required_size()
     return 2
 end
 
-
-function next_index(queue::Queue{T}, index::Int) where {T}
-    n = index + 1
-    if n > queue.capacity
-        n = 1
-    end
-    return n
-end
-
-function prev_index(queue::Queue{T}, index::Int) where {T}
-    n = index - 1
-    if n < 1
-        n = queue.capacity
-    end
-    return n
-end
-
-function is_capacity_reached(queue::Queue{T}, tail_index = queue.tail_ptr) where {T}
-    zero_capa = queue.capacity == 0
-    exceeding_length_actual = length(queue) >= queue.capacity
-    exceeding_length_pretending = length(queue; tail = tail_index) > queue.capacity
-    # first_push = queue.head_ptr == queue.tail_ptr && queue.head_ptr == 1
-    return zero_capa || exceeding_length_actual || exceeding_length_pretending # || first_push
-end
-
-function grow_queue!(queue::Queue{T}) where {T}
-    growth_factor   = 2
-    L               = queue.capacity
-    new_capa        = convert(Int, ceil(queue.capacity * growth_factor))
-    queue.capacity  = queue.capacity == 0 ? 1 : new_capa
-    new_data        = similar( queue.data, T, queue.capacity )
-
-    if queue.head_ptr >= queue.tail_ptr
-        # 2 copies
-        copyto!(new_data, 1,                      queue.data, queue.head_ptr, L - queue.head_ptr + 1)
-        copyto!(new_data, L - queue.head_ptr + 2, queue.data, 1,              queue.tail_ptr)
-        queue.head_ptr = 1
-        queue.tail_ptr = L
-    else
-        # one copy
-        copyto!(new_data, queue.data)
-        queue.head_ptr = 1
-        queue.tail_ptr = L # L > 0 ? L : queue.capacity
-    end
-
-    queue.data = new_data;
-
-    return queue
-end
-
-
-function Base.push!(queue::Queue{T}, new_element::T) where {T}
-
-    t_next = next_index(queue, queue.tail_ptr)
-    if is_capacity_reached(queue, t_next)
-        grow_queue!(queue)
-        queue.tail_ptr += 1
-    else
-        queue.tail_ptr = t_next
-    end
-    queue.data[queue.tail_ptr] = new_element
-    if queue.head_ptr == 0 && queue.tail_ptr != 0
-        queue.head_ptr = queue.tail_ptr
-    end
-    return queue
-end
-
-function Base.pop!(queue::Queue{T}) where {T}
-    if isempty(queue)
-        underflow_error("empty queue")
-    end
-    elem = queue.data[queue.head_ptr]
-    h_next = queue.head_ptr + 1
-    if h_next > queue.tail_ptr
-        queue.head_ptr = 0
-        queue.tail_ptr = 0
-    else
-        queue.head_ptr = next_index(queue, queue.head_ptr)
-    end
-    return elem
-end
-
-function Base.peek(queue::Queue{T}) where {T}
-    return queue.data[queue.head_ptr]
-end
-
-
-function Base.peek(queue::Queue{T}, n::Int = 0)::T where {T}
-    idx = queue.head_ptr + n
-    if idx > queue.capacity
-        over = idx - queue.capacity
-        idx = over
-    end
-    return queue.data[idx]
-end
-
-function Base.length(queue::Queue{T}) where {T}
-    if queue.head_ptr == 0 || queue.tail_ptr == 0
-        return 0
-    else
-        t = queue.tail_ptr
-        h = queue.head_ptr
-        L = queue.capacity
-        return t - h + 1 + ((t < h) * L)
-    end
-end
 
 function Base.length(queue::Queue{T}; head = queue.head_ptr, tail = queue.tail_ptr) where {T}
     if head == 0 || tail == 0
@@ -159,6 +54,112 @@ end
 function capacity(queue::Queue{T}) where {T}
     return queue.capacity
 end
+
+function next_index(queue::Queue{T}, index::Int) where {T}
+    n = index + 1
+    if n > queue.capacity
+        n = 1
+    end
+    return n
+end
+
+function prev_index(queue::Queue{T}, index::Int) where {T}
+    n = index - 1
+    if n < 1
+        n = queue.capacity
+    end
+    return n
+end
+
+function is_capacity_reached(queue::Queue{T}, add_one::Bool = false) where {T}
+    zero_capa                   = queue.capacity == 0
+    L = length(queue)
+    exceeding_length_actual     = L >= queue.capacity
+    exceeding_length_pretending = L + (1 * add_one) > queue.capacity
+
+    return zero_capa || exceeding_length_actual || exceeding_length_pretending
+end
+
+function grow_queue!(queue::Queue{T}) where {T}
+    growth_factor   = 2
+    L               = queue.capacity
+    new_capa        = convert(Int, ceil(queue.capacity * growth_factor))
+    queue.capacity  = queue.capacity == 0 ? 1 : new_capa
+    new_data        = similar( queue.data, T, queue.capacity )
+
+    if queue.head_ptr >= queue.tail_ptr
+        # 2 copies
+        copyto!(new_data, 1,                      queue.data, queue.head_ptr, L - queue.head_ptr + 1)
+        copyto!(new_data, L - queue.head_ptr + 2, queue.data, 1,              queue.tail_ptr)
+        queue.head_ptr = 1
+        queue.tail_ptr = L
+    else
+        # one copy
+        copyto!(new_data, queue.data)
+        queue.head_ptr = 1
+        queue.tail_ptr = L
+    end
+
+    queue.data = new_data;
+
+    return queue
+end
+
+
+function Base.push!(queue::Queue{T}, new_element::T) where {T}
+
+    t_next = next_index(queue, queue.tail_ptr)
+
+    if is_capacity_reached(queue, true)
+        grow_queue!(queue)
+        queue.tail_ptr += 1
+    else
+        queue.tail_ptr = t_next
+    end
+
+    queue.data[queue.tail_ptr] = new_element
+
+    # first push
+    if queue.head_ptr == 0 && queue.tail_ptr != 0
+        queue.head_ptr = queue.tail_ptr
+    end
+
+    return queue
+end
+
+function Base.pop!(queue::Queue{T}) where {T}
+    L = length(queue)
+    if L <= 0
+        underflow_error("empty queue")
+    end
+
+    elem   = queue.data[queue.head_ptr]
+
+    if L == 1
+        # reset queue
+        queue.head_ptr = 0
+        queue.tail_ptr = 0
+    else
+        queue.head_ptr = next_index(queue, queue.head_ptr)
+    end
+
+    return elem
+end
+
+function Base.peek(queue::Queue{T}) where {T}
+    return queue.data[queue.head_ptr]
+end
+
+
+function Base.peek(queue::Queue{T}, n::Int = 0)::T where {T}
+    idx = queue.head_ptr + n
+    if idx > queue.capacity
+        over = idx - queue.capacity
+        idx = over
+    end
+    return queue.data[idx]
+end
+
 
 function Base.getindex(queue::Queue{T}, idx::Int) where {T}
     return queue.data[idx]
@@ -187,6 +188,7 @@ function Base.show(io::IO, queue::Queue{T}) where {T}
     println("\tcapacity:\t$(queue.capacity)")
     println("\thead_ptr:\t$(queue.head_ptr)")
     println("\ttail_ptr:\t$(queue.tail_ptr)")
+    
     print("\tdata:\t\tVector{$(T)}")
 
     if queue.head_ptr > queue.tail_ptr
