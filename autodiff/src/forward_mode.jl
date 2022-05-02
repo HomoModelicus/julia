@@ -43,6 +43,63 @@ function derivative(vec::Vector{D}) where {D <: AbstractDualNumber}
 end
 
 
+function derivative(fcn, x0::T) where {T <: Number}
+    d = DualNumber(x0)
+    y = fcn(d)
+    return y.v
+end 
+
+function derivative(fcn, x0::T) where {T <: AbstractDualNumber}
+    y = fcn(x0)
+    return y.v
+end 
+
+function gradient(fcn, x0::Vector{T}) where {T <: Number}
+    
+    L      = length(x0)
+    e_i    = zeros(T, L)
+    ds     = map(DualNumber, x0, e_i)
+    g      = zeros(T, L)
+    
+    for ii = 1:L
+        ds[ii] = DualNumber(x0[ii], one(T))
+        y      = fcn(ds)
+        g[ii]  = y.v
+        ds[ii] = DualNumber(x0[ii], zero(T))
+    end
+
+    return g
+end 
+
+function gradient(fcn, d0::Vector{T}) where {T <: AbstractDualNumber}
+    x0 = value(d0)
+    return gradient(fcn, x0)
+end
+
+function jacobian(fcn, x0::Vector{T}) where {T <: Number}
+    # f: R^n -> R^m
+    # g_ij = df_i / dx_j
+
+    L      = length(x0)
+    e_i    = zeros(T, L)
+    e_i[1] = one(T)
+    ds     = map(DualNumber, x0, e_i)
+    f1     = fcn(ds)
+    jac    = zeros(T, length(f1), length(x0)) # m-by-n
+
+    jac[:, 1] = derivative(f1)
+    for ii = 2:L
+        ds[ii-1]   = DualNumber(x0[ii-1], zero(T))
+        ds[ii]     = DualNumber(x0[ii], one(T))
+        f1         = fcn(ds)
+        jac[:, ii] = derivative(f1)
+    end
+
+    return jac
+end
+
+
+
 
 
 function Base.:(==)(d1::DualNumber, d2::DualNumber)
