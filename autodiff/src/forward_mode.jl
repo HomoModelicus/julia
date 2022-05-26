@@ -16,17 +16,34 @@ function DualNumber(x, v)
     return DualNumber( promote(x, v)... )
 end
 function DualNumber(x::T) where {T}
-    return DualNumber{T}(x, one(T))
+    return DualNumber{T}(x, zero(T))
 end
 
-function eltype(d::DualNumber)
+function Base.eltype(d::DualNumber)
     return typeof(d.x)
 end
 
+function Base.zero(x::DualNumber{T}) where {T}
+    return DualNumber(zero(T))
+end
+
+function Base.one(x::DualNumber{T}) where {T}
+    return DualNumber(one(T))
+end
+
+function Base.zero(::Type{DualNumber{T}}) where {T}
+    return DualNumber(zero(T))
+end
+
+function Base.one(::Type{DualNumber{T}}) where {T}
+    return DualNumber(one(T))
+end
+
 function value(vec::Vector{D}) where {D <: AbstractDualNumber}
-    T = eltype(vec[1])
+    Dtype = eltype(vec)
+    Xtype = Dtype.parameters[1]
     L = length(vec)
-    v = Vector{T}(undef, L)
+    v = Vector{Xtype}(undef, L)
     for kk = 1:L
         v[kk] = vec[kk].x
     end
@@ -43,18 +60,54 @@ function derivative(vec::Vector{D}) where {D <: AbstractDualNumber}
 end
 
 
-function derivative(fcn, x0::T) where {T <: Number}
-    d = DualNumber(x0)
+
+
+
+
+
+
+# function derivative(fcn, x0::T) where {T <: AbstractDualNumber}
+# end
+
+# function gradient(fcn, x0::Vector{T}) where {T <: Number}
+# end
+
+# function gradient(fcn, d0::Vector{T}) where {T <: AbstractDualNumber}
+# end
+
+# function jacobian(fcn, x0::Vector{T}) where {T <: Number}
+# end
+
+# function directional_derivative(fcn, x, s)
+# end
+
+
+
+
+function derivative(::ForwardMode, fcn, x0::T) where {T <: Number}
+    d = DualNumber(x0, one(T))
     y = fcn(d)
     return y.v
-end 
+end
 
-function derivative(fcn, x0::T) where {T <: AbstractDualNumber}
+# ambigous in presence of reverse mode, forward mode is chosen
+function derivative(fcn, x0::T) where {T <: Number}
+    return derivative(ForwardMode(), fcn, x0)
+end
+
+function derivative(::ForwardMode, fcn, x0::T) where {T <: AbstractDualNumber}
     y = fcn(x0)
     return y.v
+end
+
+function derivative(fcn, x0::T) where {T <: AbstractDualNumber}
+    return derivative(ForwardMode(), fcn, x0)
 end 
 
-function gradient(fcn, x0::Vector{T}) where {T <: Number}
+
+
+
+function gradient(::ForwardMode, fcn, x0::Vector{T}) where {T <: Number}
     
     L      = length(x0)
     e_i    = zeros(T, L)
@@ -69,14 +122,25 @@ function gradient(fcn, x0::Vector{T}) where {T <: Number}
     end
 
     return g
-end 
+end
 
-function gradient(fcn, d0::Vector{T}) where {T <: AbstractDualNumber}
+# ambigous in presence of reverse mode, reverse mode is chosen
+# function gradient(fcn, x0::Vector{T}) where {T <: Number}
+#     return gradient(::ForwardMode, fcn, x0)
+# end
+
+function gradient(::ForwardMode, fcn, d0::Vector{T}) where {T <: AbstractDualNumber}
     x0 = value(d0)
     return gradient(fcn, x0)
 end
 
-function jacobian(fcn, x0::Vector{T}) where {T <: Number}
+function gradient(fcn, d0::Vector{T}) where {T <: AbstractDualNumber}
+    return gradient(ForwardMode(), fcn, d0)
+end
+
+
+
+function jacobian(::ForwardMode, fcn, x0::Vector{T}) where {T <: Number}
     # f: R^n -> R^m
     # g_ij = df_i / dx_j
 
@@ -97,6 +161,35 @@ function jacobian(fcn, x0::Vector{T}) where {T <: Number}
 
     return jac
 end
+
+# ambigous in presence of reverse mode, reverse mode is chosen
+# function jacobian(fcn, x0::Vector{T}) where {T <: Number}
+# end
+
+
+function directional_derivative(::ForwardMode, fcn, x, s)
+    # naive implementation
+    # g  = gradient(fcn, x)
+    # dg = dot(g, s)
+    
+    # a bit better version, take the gradient of
+    sn = normalize(s)
+    df(t) = begin
+        z = map(a -> t * a, sn)
+        y = x + z
+        return fcn(y)
+    end # fcn(x + t .* s)
+    dg = derivative(df, 0.0)
+    return dg 
+end
+
+function directional_derivative(fcn, x, s)
+    return directional_derivative(ForwardMode(), fcn, x, s)
+end
+
+
+
+
 
 
 
@@ -189,7 +282,7 @@ function Base.:^(d1::T, d2::D) where {D <: AbstractDualNumber, T <: Number}
 end
 function Base.:^(d1::D, d2::T) where {D <: AbstractDualNumber, T <: Number}
     x_ = d1.x ^ d2
-    v_ = d2 * d1.x ^ (d2 - 1)
+    v_ = d1.v * d2 * d1.x ^ (d2 - 1)
     return DualNumber(x_, v_)
 end
 
