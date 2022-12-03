@@ -10,7 +10,7 @@
 In what follows I'll show you a small working example for a simple pt1 plant with a pi controller.
 
 The result looks like as expected with a step excition:
-<img src="https://github.com/HomoModelicus/julia/tenedyn/tenedyn_pt1pi.png" width="350" height="300">
+<img src="https://github.com/HomoModelicus/julia/blob/main/projects/tenedyn/tenedyn_pt1pi.png" width="350" height="300">
 
 
 Include the required paths:
