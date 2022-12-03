@@ -210,6 +210,6 @@ ode_res = run_simulation_pt1(ode_fcn)
 ```
 
 The result looks like:
-
+https://github.com/HomoModelicus/julia/edit/main/projects/tenedyn/tenedyn_pt1pi.png
 
 
