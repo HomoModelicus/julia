@@ -10,7 +10,7 @@
 In what follows I'll show you a small working example.
 
 The result looks like:
-![plot](https://github.com/HomoModelicus/julia/edit/main/projects/tenedyn/tenedyn_pt1pi.png)
+![plot](https://github.com/HomoModelicus/julia/tenedyn/tenedyn_pt1pi.png)
 
 
 Include the required paths:
