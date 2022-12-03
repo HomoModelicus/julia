@@ -8,5 +8,13 @@
 
 In what follows I'll show you a small working example.
 
+Include the required paths:
+- the tenedyn module itself
+- and the ode module is used for solving the resulting system
+```julia
+include("../src/tenedyn_module.jl")
+include("../../../math/ode/src/ode_module.jl")
+
+```
 
 
