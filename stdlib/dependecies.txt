@@ -1,0 +1,7 @@
+
+
+# this library shall contain only basic algorithms and datastructures
+# they shall not depend on each other (exception is: stack and queue, as they're so fundamental datastructures)
+# every special topic shall go into the toolbox folder
+
+
