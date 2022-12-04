@@ -16,11 +16,11 @@ Plans to be implemented:
 - connect statements, flow and potential variables
 - dae solver(s)
 
-A short example, a vision for simple elements.
+A short example, a vision for simple elements:
 - typedef like structures for RealInput
 - left-to-right class definitions with blocks for each purpose: properties, variables, models, equations, algorithms
 - multiple inheritance for collecting behaviour from each parents
-- 
+- main function for simulation start / entry point
 
 ```julia
     RealInput  :: class (connector) = {Real, input}
@@ -51,6 +51,8 @@ A short example, a vision for simple elements.
         end
     end
     
+    
+    /* main function for entry point, for simulation start */
     main :: function
         pt1 = Pt1(
               .T = 0.1          // parametrization in the object
