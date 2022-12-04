@@ -26,6 +26,9 @@ include("../../../math/ode/src/ode_module.jl")
 ```
 
 Definition of a simple pt1 model with pi controller:
+- first the elementary objects are created for the plant, controller and sensor
+- then the topology/connectivity between those are defined
+- finally, we return the model object which can be later "compiled" -> transpiled into Julia code/strings for the ode solver
 
 ```julia
 function create_model_pi_controller_pt1(
