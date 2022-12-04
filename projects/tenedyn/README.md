@@ -186,7 +186,7 @@ function create_parametrized_model_pi_controller_pt1()
 end
 ```
 
-We write the simulation driver code, which also contain a visualization step:
+We write the simulation driver code, which also contains a visualization step:
 ```julia
 function run_simulation_pt1(ode_fcn)
     
@@ -212,6 +212,12 @@ end
 
 
 At last we can simulate the defined, parameterized model with the given solver and tolerances.
+This demonstrates the typical workflow in a simulation environment:
+- model build up
+- parametrization
+- ode/dae settings
+- simulation run
+- plausibilization
 
 ```julia
 ode_fcn = create_parametrized_model_pi_controller_pt1()
