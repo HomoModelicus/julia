@@ -17,9 +17,57 @@ Plans to be implemented:
 - dae solver(s)
 
 A short example, a vision for simple elements.
+- typedef like structures for RealInput
+- left-to-right class definitions with blocks for each purpose: properties, variables, models, equations, algorithms
+- multiple inheritance for collecting behaviour from each parents
+- 
 
-
-
-
-
+```julia
+    RealInput  :: class (connector) = {Real, input}
+    RealOutput :: class (connector) = {Real, output}
+    
+    AbstractSI :: class (abstract) 
+        variables // or properties
+            x::RealInput // connectors are always variables
+        end
+    end
+    
+    AbstractSO :: class (abstract) 
+        variables
+            x::RealOutput
+        end
+    end
+    
+    AbstractSISO :: class (abstract)  <: {AbstractSI, AbstractSO}
+    end
+    
+    Pt1 :: class  <: AbstractSISO
+        properties
+            T::Real
+        end
+        equations
+            T * der(y) +...
+                y = x
+        end
+    end
+    
+    main :: function
+        pt1 = Pt1(
+              .T = 0.1          // parametrization in the object
+              .y.initial = 3.0  // initial value
+              )
+        
+        solver_options = SolverOptions(
+              .type    = bdf3,
+              .abs_tol = 1e-6,
+              .rel_tol = 1e-8,
+              .t_stop  = 5.0)
+        
+        simulate!(
+          .object = pt1,
+          .solver_options = solver_options
+          )
+        
+    end
+```
 
