@@ -1,5 +1,5 @@
 
-# Tenedyn - Text node dynamics
+# Tenedyn - Text node dynamics - Signal Flow based Modelling
 
 - This is a Simulink-like signal flow based simulation tool.
 - The aim is to create a model based on ordinary differential equations (ode), by means of primitive elements, like Sum() or Sin() or Integrator().
