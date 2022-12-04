@@ -15,6 +15,7 @@ Plans to be implemented:
 - models as subelements
 - connect statements, flow and potential variables
 - dae solver(s)
+- differentiating between static_if (Modelica if noEvent(cond) ) vs dynamic_if (Modelica if with event generation)
 
 A short example, a vision for simple elements:
 - typedef like structures for RealInput
